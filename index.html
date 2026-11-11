@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Seeing like a brain</title>
+<meta name="description" content="A vision-science lab for paintings. Look at Monet, Leonardo, Seurat, Repin and Caravaggio through a model of central and peripheral vision, lightness and color, and spatial frequency.">
+<link rel="preload" href="assets/fonts/eb-garamond-latin-400-italic.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="assets/fonts/atkinson-hyperlegible-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<a class="skip" href="#label">Skip to controls and notes</a>
+
+<div class="app">
+  <section class="stage" aria-label="Painting viewer">
+    <div class="canvas-wrap" id="canvasWrap">
+      <div class="frame" id="frame">
+        <canvas id="gl" tabindex="0" aria-label="The painting. Move the pointer or use the arrow keys to move the fixation point."></canvas>
+        <canvas id="overlay" aria-hidden="true"></canvas>
+      </div>
+      <p class="intro" id="intro">Only the patch under your cursor is sharp.<br>Move it.</p>
+      <p class="loading" id="loading" role="status" aria-live="polite">Preparing the painting</p>
+      <p class="fallback" id="fallback" hidden></p>
+    </div>
+    <nav class="shelf" id="shelf" aria-label="Paintings"></nav>
+  </section>
+
+  <aside class="label" id="label" aria-label="Controls and notes">
+    <p class="wordmark">Seeing like a brain</p>
+    <header class="plate" id="plate"></header>
+
+    <div class="tabs" id="tabs" role="tablist" aria-label="Lens">
+      <button role="tab" id="tab-fovea" data-lens="fovea" aria-controls="panel-fovea">Fovea</button>
+      <button role="tab" id="tab-luminance" data-lens="luminance" aria-controls="panel-luminance">Luminance</button>
+      <button role="tab" id="tab-distance" data-lens="distance" aria-controls="panel-distance">Distance</button>
+      <button role="tab" id="tab-scanpath" data-lens="scanpath" aria-controls="panel-scanpath">Scanpath</button>
+    </div>
+
+    <section class="panel" id="panel-fovea" role="tabpanel" aria-labelledby="tab-fovea">
+      <p class="note" id="note-fovea"></p>
+      <div class="ctl"><label for="fov">Field of view</label><input id="fov" type="range" min="3" max="60" step="1" value="20"><output id="fovOut" for="fov"></output></div>
+      <div class="ctl"><label for="falloff">Falloff</label><input id="falloff" type="range" min="1" max="12" step="0.5" value="4"><output id="falloffOut" for="falloff"></output></div>
+      <label class="check"><input type="checkbox" id="colorFade"> Fade color toward the edge</label>
+      <label class="check"><input type="checkbox" id="ring" checked> Show the fixation ring</label>
+      <p class="readout" id="foveaReadout" aria-live="polite"></p>
+    </section>
+
+    <section class="panel" id="panel-luminance" role="tabpanel" aria-labelledby="tab-luminance" hidden>
+      <p class="note" id="note-luminance"></p>
+      <div class="seg" role="group" aria-label="Compare the painting with">
+        <button type="button" data-lumview="lum">Lightness only</button>
+        <button type="button" data-lumview="chroma">Color only</button>
+        <button type="button" data-lumview="color">Original</button>
+      </div>
+      <div class="ctl" id="splitCtl"><label for="split">Divider</label><input id="split" type="range" min="0" max="100" step="1" value="50"><output id="splitOut" for="split"></output></div>
+      <label class="check"><input type="checkbox" id="iso"> Mark isoluminant edges</label>
+      <div class="ctl" id="thrCtl"><label for="thr">Color edge threshold</label><input id="thr" type="range" min="0.5" max="8" step="0.25" value="4"><output id="thrOut" for="thr"></output></div>
+      <p class="readout" id="isoReadout" aria-live="polite"></p>
+      <div class="row">
+        <button type="button" class="btn" id="probeBtn">Measure two spots</button>
+        <button type="button" class="btn" id="compareBtn">Compare the paintings</button>
+      </div>
+      <p class="readout" id="probeReadout" aria-live="polite"></p>
+      <div id="compare" class="compare" hidden></div>
+    </section>
+
+    <section class="panel" id="panel-distance" role="tabpanel" aria-labelledby="tab-distance" hidden>
+      <p class="note" id="note-distance"></p>
+      <div class="seg" role="group" aria-label="Spatial frequency view">
+        <button type="button" data-freq="blur">Blur</button>
+        <button type="button" data-freq="detail">Fine detail only</button>
+        <button type="button" data-freq="off">Original</button>
+      </div>
+      <div class="ctl"><label for="sigma">Amount</label><input id="sigma" type="range" min="0" max="100" step="1" value="50"><output id="sigmaOut" for="sigma"></output></div>
+      <p class="readout" id="distReadout" aria-live="polite"></p>
+    </section>
+
+    <section class="panel" id="panel-scanpath" role="tabpanel" aria-labelledby="tab-scanpath" hidden>
+      <p class="note" id="note-scanpath"></p>
+      <div class="ctl stack"><label for="task">Task</label><select id="task"></select></div>
+      <div class="row">
+        <button type="button" class="btn primary" id="recBtn">Start, 30 seconds</button>
+        <span class="timer" id="timer" aria-live="off"></span>
+      </div>
+      <fieldset class="checks">
+        <legend>Show</legend>
+        <label class="check"><input type="checkbox" id="showPath" checked> Your fixations</label>
+        <label class="check"><input type="checkbox" id="showHeat"> Where you dwelled</label>
+        <label class="check"><input type="checkbox" id="showSal"> Model saliency</label>
+        <label class="check"><input type="checkbox" id="showModel"> Model’s path</label>
+      </fieldset>
+      <ol class="runs" id="runs"></ol>
+      <p class="readout" id="scanReadout" aria-live="polite"></p>
+      <button type="button" class="btn quiet" id="clearRuns" hidden>Clear recordings</button>
+    </section>
+
+    <article class="case" id="case"></article>
+
+    <section class="more">
+      <label class="upload">Try your own photo of a painting
+        <input type="file" id="upload" accept="image/*">
+      </label>
+      <p class="small">Your image stays in your browser. It is never uploaded.</p>
+      <details><summary>How the lenses work</summary><div id="method"></div></details>
+      <details><summary>References</summary><ol class="refs" id="refs"></ol></details>
+      <details><summary>Image credits</summary><div id="credits"></div></details>
+    </section>
+  </aside>
+</div>
+
+<script type="module" src="js/main.js"></script>
+</body>
+</html>

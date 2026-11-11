@@ -1,0 +1,12 @@
+{
+  "name": "seeing-like-a-brain",
+  "version": "1.0.0",
+  "description": "A vision-science lab for looking at paintings: foveation, luminance, spatial frequency and scanpaths.",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "test": "node --test",
+    "serve": "python3 -m http.server 8000"
+  },
+  "license": "MIT"
+}
